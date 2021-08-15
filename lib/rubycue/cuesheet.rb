@@ -6,9 +6,9 @@ module RubyCue
       @cuesheet = cuesheet      
       @reg = {
         :track => %r(TRACK (\d{1,3}) AUDIO),
-        :performer => %r(PERFORMER "(.*)"),
+       :performer => %r(PERFORMER "(.*)"),
         :title => %r(TITLE "(.*)"),
-        :index => %r(INDEX \d{1,3} (\d{1,3}):(\d{1,2}):(\d{1,2})),
+        :index => %r(INDEX \d{1,3} (\d{1,4}):(\d{1,2}):(\d{1,2})),
         :file => %r(FILE "(.*)"),
         :genre => %r(REM GENRE (.*)\b)
       }
@@ -18,13 +18,13 @@ module RubyCue
     def parse!
       @songs = parse_titles.map{|title| {:title => title}}
       @songs.each_with_index do |song, i|
-        song[:performer] = parse_performers[i]
+  #      song[:performer] = parse_performers[i]
         song[:track] = parse_tracks[i]
         song[:index] = parse_indices[i]
         song[:file] = parse_files[i]
       end
       parse_genre
-      raise RubyCue::InvalidCuesheet.new("Field amounts are not all present. Cuesheet is malformed!") unless valid?
+   #   raise RubyCue::InvalidCuesheet.new("Field amounts are not all present. Cuesheet is malformed!") unless valid?
       calculate_song_durations!
       true
     end
@@ -38,13 +38,14 @@ module RubyCue
       end
     end
 
-    def valid?
-      @songs.all? do |song|
-        [:performer, :track, :index, :title].all? do |key|
-          song[key] != nil
-        end
-      end
-    end
+    #def valid?
+     # @songs.all? do |song|
+  #      valid_perfomer = (@performer if @file) || song[:performer]
+   #     valid_perfomer && [:track, :index, :title].all? do |key|
+     #     song[key] != nil
+    #    end
+     # end
+    #end
 
   private
 
@@ -70,13 +71,13 @@ module RubyCue
       @titles
     end
 
-    def parse_performers
-      unless @performers
-        @performers = cuesheet_scan(:performer).map{|performer| performer.first}
-        @performer = @performers.delete_at(0)
-      end
-      @performers
-    end
+   # def parse_performers
+    #  unless @performers
+     #   @performers = cuesheet_scan(:performer).map{|performer| performer.first}
+      #  @performer = @performers.delete_at(0)
+      #end
+      #@performers
+    #end
 
     def parse_tracks
       @tracks ||= cuesheet_scan(:track).map{|track| track.first.to_i}
